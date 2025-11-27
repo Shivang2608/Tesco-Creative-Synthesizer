@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-multipart
+Pillow
+rembg
+requests
+onyx-client  # Optional: standard library for Stability AI if we use their SDK later

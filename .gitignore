@@ -1,0 +1,24 @@
+# Dependency directories
+node_modules/
+__pycache__/
+venv/
+env/
+.venv/
+
+# Environment variables (SECURITY RISK if uploaded)
+.env
+.env.local
+
+# Generated Assets (Don't upload test images)
+backend/generated_assets/
+backend/backup_bg.jpg
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Next.js build
+.next/
+out/
+build/
+dist/
