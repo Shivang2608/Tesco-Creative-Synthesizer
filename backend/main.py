@@ -5,6 +5,7 @@ import shutil
 import os
 import uuid
 from creative_engine import CreativeCatalyst
+from compliance_engine import ComplianceEngine 
 
 app = FastAPI()
 
@@ -21,7 +22,7 @@ os.makedirs("generated_assets", exist_ok=True)
 app.mount("/static", StaticFiles(directory="generated_assets"), name="static")
 
 creative_tool = CreativeCatalyst()
-
+auditor = ComplianceEngine()
 @app.post("/generate-campaign")
 async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(...)):
     # Basic upload logic only
@@ -39,7 +40,7 @@ async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(..
     
     # 3. Composite
     master_ad = creative_tool.composite_image(product_clean, bg_scene)
-    
+    audit_report = auditor.analyze_ad(master_path)
     master_filename = f"master_{unique_id}.png"
     master_ad.save(f"generated_assets/{master_filename}")    
     
@@ -47,5 +48,6 @@ async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(..
         "status": "success",
         "assets": {
             "square": {"url": f"http://127.0.0.1:8000/static/{master_filename}"}
-        }
+        },
+        "compliance": audit_report
     }
