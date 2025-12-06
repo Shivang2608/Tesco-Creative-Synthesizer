@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Upload, Wand2, Loader2 } from "lucide-react";
+import { Upload, Wand2, Loader2, CheckCircle } from "lucide-react";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -8,6 +8,9 @@ export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+
+  const [scanning, setScanning] = useState(false);
+  const [displayScore, setDisplayScore] = useState(0);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -20,7 +23,9 @@ export default function Home() {
   const generateAd = async () => {
     if (!selectedFile || !prompt) return alert("Please upload file and enter prompt");
     setLoading(true);
-    
+    setResult(null);
+    setDisplayScore(0);
+
     const formData = new FormData();
     formData.append("file", selectedFile);
     formData.append("prompt", prompt);
@@ -31,14 +36,38 @@ export default function Home() {
         body: formData,
       });
       const data = await response.json();
+      setLoading(false);
       setResult(data);
+      setScanning(true);
+
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
   };
-  
+  useEffect(() => {
+    if (scanning && result) {
+      const targetScore = result.compliance.compliance_score; // Get score from backend
+      const duration = 2000; // 2 seconds
+      const increment = targetScore / 60; // 60fps approx
+      
+      let currentScore = 0;
+      const timer = setInterval(() => {
+        currentScore += increment;
+        if (currentScore >= targetScore) {
+          setDisplayScore(targetScore);
+          clearInterval(timer);
+          // Wait 1 second then finish scanning
+          setTimeout(() => setScanning(false), 1000);
+        } else {
+          setDisplayScore(Math.floor(currentScore));
+        }
+      }, 30);
+      
+      return () => clearInterval(timer);
+    }
+  }, [scanning, result]);
   return (
     <main className="min-h-screen bg-[#050B14] text-white font-sans flex flex-col items-center justify-center p-4">
       {/* Header */}
