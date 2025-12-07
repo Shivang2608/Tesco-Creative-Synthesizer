@@ -40,10 +40,41 @@ async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(..
     
     # 3. Composite
     master_ad = creative_tool.composite_image(product_clean, bg_scene)
-    audit_report = auditor.analyze_ad(master_path)
+    
+    
     master_filename = f"master_{unique_id}.png"
+    master_path= f"generated_assets/{master_filename}"
     master_ad.save(f"generated_assets/{master_filename}")    
     
+    audit_report = auditor.analyze_ad(master_path)
+
+    formats = {
+        "square":    {"w": 1080, "h": 1080, "label": "Social Feed (1:1)"},
+        "story":     {"w": 1080, "h": 1920, "label": "Story/Reel (9:16)"},
+        "landscape": {"w": 1920, "h": 1080, "label": "Web Banner (16:9)"},
+        "portrait":  {"w": 1080, "h": 1350, "label": "Mobile Display (4:5)"}
+    }
+    generated_assets = {}
+    
+    for key, dims in formats.items():
+        if key == "square":
+            # Master is already square (usually), just link it
+            generated_assets[key] = {
+                "url": f"http://127.0.0.1:8000/static/{master_filename}",
+                "label": dims["label"]
+            }
+        else:
+            # Resize using the new engine
+            resized_img = creative_tool.adaptive_cascade(master_ad, dims["w"], dims["h"])
+            filename = f"{key}_{unique_id}.png"
+            path = f"generated_assets/{filename}"
+            resized_img.save(path)
+            
+            generated_assets[key] = {
+                "url": f"http://127.0.0.1:8000/static/{filename}",
+                "label": dims["label"]
+            }
+            
     return {
         "status": "success",
         "assets": {

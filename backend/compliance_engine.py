@@ -1,4 +1,4 @@
-from PIL import Image, ImageStat
+from PIL import Image, ImageStat, ImageFilter
 
 class ComplianceEngine:
     def __init__(self):
@@ -40,3 +40,35 @@ class ComplianceEngine:
                 "safe_zone_padding": "45px"
             }
         }
+
+    def adaptive_cascade(self, master_image, target_width, target_height):
+        """
+        Layer 3: Resizes the master creative to new formats with blur fill.
+        """
+        # 1. Create canvas
+        canvas = Image.new('RGB', (target_width, target_height))
+        
+        # 2. Blur Fill Background
+        bg_fill = master_image.copy()
+        bg_fill = bg_fill.resize((target_width, target_height), Image.Resampling.LANCZOS)
+        bg_fill = bg_fill.filter(ImageFilter.GaussianBlur(radius=40))
+        
+        # 3. Fit Master Image (Contain logic)
+        ratio = min(target_width / master_image.width, target_height / master_image.height)
+        # Use 90% of available space to leave a nice margin
+        ratio = ratio * 0.90
+        
+        new_w = int(master_image.width * ratio)
+        new_h = int(master_image.height * ratio)
+        
+        master_resized = master_image.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        
+        # 4. Center it
+        x_pos = (target_width - new_w) // 2
+        y_pos = (target_height - new_h) // 2
+        
+        # 5. Paste
+        canvas.paste(bg_fill, (0, 0))
+        canvas.paste(master_resized, (x_pos, y_pos))
+        
+        return canvas
