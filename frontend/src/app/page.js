@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Upload, Wand2, Loader2, CheckCircle, ChevronLeft, ChevronRight, Download, Share2 } from "lucide-react";
+import { Upload, Wand2, Loader2, CheckCircle, ChevronLeft, ChevronRight, Download, Share2, Tag, CreditCard, Lock } from "lucide-react";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -12,7 +12,20 @@ export default function Home() {
   const formats = ['square', 'story', 'landscape', 'portrait'];
   const handleNext = () => setActiveIndex((prev) => (prev + 1) % formats.length);
   const handlePrev = () => setActiveIndex((prev) => (prev - 1 + formats.length) % formats.length);
-  
+  const [brand, setBrand] = useState("generic");
+  const [clubcard, setClubcard] = useState(false);
+
+  const brands = {
+    "generic": { color: "bg-blue-600", hex: "#2563eb" },
+    "tesco":   { color: "bg-[#00539F]", hex: "#00539F" },
+    "cadbury": { color: "bg-[#261251]", hex: "#261251" },
+    "coca-cola": { color: "bg-[#F40009]", hex: "#F40009" },
+    "heineken": { color: "bg-[#008200]", hex: "#008200" }
+  };
+
+  const themeColor = brands[brand].color;
+  const themeHex = brands[brand].hex;
+
   const getOffset = (index) => {
     const diff = index - activeIndex;
     if (diff === 0) return 0;
@@ -40,6 +53,9 @@ export default function Home() {
     const formData = new FormData();
     formData.append("file", selectedFile);
     formData.append("prompt", prompt);
+
+    formData.append("brand", brand);
+    formData.append("clubcard", clubcard);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/generate-campaign", {
@@ -84,17 +100,38 @@ export default function Home() {
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 h-20 px-8 z-30 flex justify-between items-center border-b border-white/5 bg-[#050B14]/80 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="bg-blue-600 text-white font-bold px-3 py-1 rounded text-xs tracking-widest uppercase">TCS</div>
+          <div className={`${themeColor} text-white font-bold px-3 py-1 rounded text-xs tracking-widest uppercase transition-colors duration-500`}>TCS</div>
           <h1 className="text-sm font-semibold tracking-tight text-slate-200 uppercase opacity-80">Tesco Creative Synthesizer</h1>
+        </div>
+        
+        {/* Brand Selector */}
+        <div className="flex items-center gap-4">
+            <span className="text-[10px] uppercase text-slate-500 font-bold tracking-widest">Brand DNA:</span>
+            <select 
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                className="bg-[#0F172A] border border-white/10 rounded-lg px-3 py-1.5 text-xs font-bold uppercase text-white focus:outline-none focus:border-blue-500 transition-all"
+            >
+                <option value="generic">Generic</option>
+                <option value="tesco">Tesco Finest</option>
+                <option value="cadbury">Cadbury</option>
+                <option value="coca-cola">Coca-Cola</option>
+                <option value="heineken">Heineken</option>
+            </select>
         </div>
       </header>
 
       {!result ? (
         <div className="flex flex-col gap-6 w-full max-w-lg z-10 pt-20">
             {/* Input Ring */}
-            <div className="flex justify-center">
+            <div className="flex justify-center relative">
+                <div className="absolute inset-[-20px] rounded-full border border-slate-800 opacity-50"></div>
                 <label className="w-64 h-64 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center cursor-pointer relative overflow-hidden group hover:border-blue-500 transition-all">
                     <input type="file" className="hidden" onChange={handleFileChange} />
+                    <svg className="absolute inset-0 w-full h-full rotate-[-90deg] drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] pointer-events-none z-20" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="#1e293b" strokeWidth="0.5" />
+                    <circle cx="50" cy="50" r="46" fill="none" stroke={themeHex} strokeWidth="1.5" strokeDasharray="144 300" strokeDashoffset="0" strokeLinecap="round" className="transition-all duration-[1.5s] ease-out"/>
+                   </svg>
                     {preview ? (
                         <img src={preview} className="object-contain w-32 h-32 relative z-10" />
                     ) : (
@@ -106,7 +143,10 @@ export default function Home() {
                 </label>
             </div>
             
+            {/* Controls Container */}
+            <div className="w-full space-y-4"></div>
             {/* Prompt Input */}
+
             <textarea 
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:border-blue-500 transition-all" 
                 placeholder="Describe the background scene (e.g., 'A marble counter in a luxury bathroom')..." 
@@ -114,7 +154,22 @@ export default function Home() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
             />
-            
+            {/* Clubcard Toggle (Added Here) */}
+                <div className="bg-[#0F172A]/80 backdrop-blur-md border border-yellow-500/20 p-3 rounded-xl shadow-sm w-full">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Tag size={14} className="text-yellow-500"/>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-500">Tesco Clubcard</span>
+                        </div>
+                        <button 
+                            onClick={() => setClubcard(!clubcard)}
+                            className={`w-8 h-4 rounded-full transition-colors relative ${clubcard ? 'bg-yellow-500' : 'bg-slate-700'}`}
+                        >
+                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${clubcard ? 'translate-x-4' : 'translate-x-0.5'}`}></div>
+                        </button>
+                    </div>
+                </div>
+                
             {/* Generate Button */}
             <button 
                 onClick={generateAd} 
@@ -125,6 +180,7 @@ export default function Home() {
                 {loading ? "Synthesizing..." : "Generate Campaign"}
             </button>
         </div>
+        
       ) : (
        // --- CAROUSEL RESULT VIEW ---
         <div className="relative z-10 flex flex-col h-full pt-20 w-full max-w-6xl animate-in fade-in duration-700">

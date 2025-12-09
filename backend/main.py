@@ -23,15 +23,28 @@ app.mount("/static", StaticFiles(directory="generated_assets"), name="static")
 
 creative_tool = CreativeCatalyst()
 auditor = ComplianceEngine()
+
 @app.post("/generate-campaign")
-async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(...)):
-    # Basic upload logic only
+async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(...),
+brand: str = Form("generic"),      # New
+clubcard: str = Form("false")):
+    
+
     unique_id = uuid.uuid4()
     temp_path = f"generated_assets/{unique_id}_{file.filename}"
     
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    brand_guidelines = {
+        "tesco": "clean white and blue theme, supermarket lighting",
+        "cadbury": "rich purple #261251 background accents, warm golden lighting",
+        "coca-cola": "vibrant red #F40009 energetic lighting, refreshing droplets",
+        "heineken": "premium green #008200 tint, stadium lighting"
+    }
+    brand_prompt = brand_guidelines.get(brand, "")
+    full_prompt = f"{prompt}, {brand_prompt}"
+    
     # 1. Remove BG
     product_clean = creative_tool.remove_background(temp_path)
     
@@ -74,7 +87,7 @@ async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(..
                 "url": f"http://127.0.0.1:8000/static/{filename}",
                 "label": dims["label"]
             }
-            
+
     return {
         "status": "success",
         "assets": {
