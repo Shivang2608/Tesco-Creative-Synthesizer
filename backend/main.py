@@ -4,8 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
 import uuid
+import google.generativeai as genai # <--- New Import
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from creative_engine import CreativeCatalyst
 from compliance_engine import ComplianceEngine 
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
 
 app = FastAPI()
 
@@ -24,6 +33,44 @@ app.mount("/static", StaticFiles(directory="generated_assets"), name="static")
 creative_tool = CreativeCatalyst()
 auditor = ComplianceEngine()
 
+@app.post("/analyze-image")
+async def analyze_image(file: UploadFile = File(...)):
+    print(f"👁️ Analyzing image: {file.filename}...")
+    
+    # Save temp file for Gemini
+    temp_filename = f"temp_analysis_{uuid.uuid4()}.jpg"
+    with open(temp_filename, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    try:
+        # Load image
+        img = Image.open(temp_filename)
+        
+        # Call Gemini Vision
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = (
+            "You are a Director of Photography. Look at this product. "
+            "Describe the PERFECT background setting for a high-end commercial ad. "
+            "Focus on specific MATERIALS (e.g., 'mahogany wood', 'brushed steel'). "
+            "Focus on LIGHTING (e.g., 'golden hour', 'softbox studio'). "
+            "Do NOT describe the product. Only the environment. "
+            "Keep it under 20 words."
+        )
+        
+        response = model.generate_content([prompt, img])
+        smart_prompt = response.text.strip()
+        print(f"💡 Gemini Suggested: {smart_prompt}")
+        
+        # Cleanup
+        os.remove(temp_filename)
+        return {"suggested_prompt": smart_prompt}
+
+    except Exception as e:
+        print(f"❌ Gemini Error: {e}")
+        if os.path.exists(temp_filename):
+            os.remove(temp_filename)
+        return {"suggested_prompt": "A luxury studio setting with professional soft lighting."}
+        
 @app.post("/generate-campaign")
 async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(...),
 brand: str = Form("generic"),      # New
@@ -44,7 +91,7 @@ clubcard: str = Form("false")):
     }
     brand_prompt = brand_guidelines.get(brand, "")
     full_prompt = f"{prompt}, {brand_prompt}"
-    
+
     # 1. Remove BG
     product_clean = creative_tool.remove_background(temp_path)
     
