@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Upload, Wand2, Loader2, CheckCircle, ChevronLeft, ChevronRight, Download, Share2, Tag, CreditCard, Lock } from "lucide-react";
+import { Upload, Wand2, Loader2, CheckCircle, ChevronLeft, ChevronRight, Download, Share2, Tag, CreditCard, Lock,Sparkles } from "lucide-react";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -14,7 +14,7 @@ export default function Home() {
   const handlePrev = () => setActiveIndex((prev) => (prev - 1 + formats.length) % formats.length);
   const [brand, setBrand] = useState("generic");
   const [clubcard, setClubcard] = useState(false);
-
+  const [analyzing, setAnalyzing] = useState(false); 
   const brands = {
     "generic": { color: "bg-blue-600", hex: "#2563eb" },
     "tesco":   { color: "bg-[#00539F]", hex: "#00539F" },
@@ -22,6 +22,7 @@ export default function Home() {
     "coca-cola": { color: "bg-[#F40009]", hex: "#F40009" },
     "heineken": { color: "bg-[#008200]", hex: "#008200" }
   };
+
 
   const themeColor = brands[brand].color;
   const themeHex = brands[brand].hex;
@@ -36,6 +37,7 @@ export default function Home() {
   const [scanning, setScanning] = useState(false);
   const [displayScore, setDisplayScore] = useState(0);
 
+  
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -43,7 +45,27 @@ export default function Home() {
       setPreview(URL.createObjectURL(file));
     }
   };
-  
+  const handleAutoPrompt = async () => {
+    if (!selectedFile) return alert("Please upload an image first!");
+    
+    setAnalyzing(true);
+    
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/analyze-image", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      setPrompt(data.suggested_prompt);
+    } catch (error) {
+      console.error("Error analyzing image:", error);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
   const generateAd = async () => {
     if (!selectedFile || !prompt) return alert("Please upload file and enter prompt");
     setLoading(true);
@@ -146,14 +168,28 @@ export default function Home() {
             {/* Controls Container */}
             <div className="w-full space-y-4"></div>
             {/* Prompt Input */}
+            <div className="relative w-full">
+                <textarea 
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:border-blue-500 transition-all pb-12" 
+                    placeholder="Describe the background scene..." 
+                    rows={3}
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                />
 
-            <textarea 
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:border-blue-500 transition-all" 
-                placeholder="Describe the background scene (e.g., 'A marble counter in a luxury bathroom')..." 
-                rows={3}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-            />
+              {/* Auto-Write Button */}
+                <button 
+                    onClick={handleAutoPrompt}
+                    disabled={analyzing}
+                    className="absolute bottom-3 right-3 bg-white/10 hover:bg-white/20 text-white border border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all flex items-center gap-2 backdrop-blur-md"
+                >
+                    {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    {analyzing ? "Thinking..." : "Auto-Write"}
+                </button>
+            </div>
+            
+
+            
             {/* Clubcard Toggle (Added Here) */}
                 <div className="bg-[#0F172A]/80 backdrop-blur-md border border-yellow-500/20 p-3 rounded-xl shadow-sm w-full">
                     <div className="flex items-center justify-between">
@@ -169,7 +205,7 @@ export default function Home() {
                         </button>
                     </div>
                 </div>
-                
+
             {/* Generate Button */}
             <button 
                 onClick={generateAd} 
