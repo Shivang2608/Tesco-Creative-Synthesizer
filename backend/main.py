@@ -73,10 +73,14 @@ async def analyze_image(file: UploadFile = File(...)):
 
 @app.post("/generate-campaign")
 async def generate_campaign(
-    file: UploadFile = File(...)), 
+   file: UploadFile = File(...), 
     prompt: str = Form(...),
-    brand: str = Form("generic"),  
-    clubcard: str = Form("false")
+    headline: str = Form(None),      
+    cta: str = Form(None),           
+    brand: str = Form("generic"),
+    clubcard: str = Form("false"),
+    price: str = Form(None),         
+    club_price: str = Form(None)     
 ):
     unique_id = uuid.uuid4()
     temp_path = f"generated_assets/{unique_id}_{file.filename}"
@@ -113,7 +117,12 @@ async def generate_campaign(
     
     # 3. Composite
     master_ad = creative_tool.composite_image(product_clean, bg_scene)
-    
+    is_clubcard = clubcard.lower() == 'true'
+    if headline or cta or is_clubcard:
+        master_ad = creative_tool.add_smart_text(
+            master_ad, headline, cta, 
+            is_clubcard, price, club_price, brand
+        )
     
     master_filename = f"master_{unique_id}.png"
     master_path= f"generated_assets/{master_filename}"
