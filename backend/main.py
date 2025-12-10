@@ -70,19 +70,32 @@ async def analyze_image(file: UploadFile = File(...)):
         if os.path.exists(temp_filename):
             os.remove(temp_filename)
         return {"suggested_prompt": "A luxury studio setting with professional soft lighting."}
-        
-@app.post("/generate-campaign")
-async def generate_campaign(file: UploadFile = File(...)), prompt: str = Form(...),
-brand: str = Form("generic"),      # New
-clubcard: str = Form("false")):
-    
 
+@app.post("/generate-campaign")
+async def generate_campaign(
+    file: UploadFile = File(...)), 
+    prompt: str = Form(...),
+    brand: str = Form("generic"),  
+    clubcard: str = Form("false")
+):
     unique_id = uuid.uuid4()
     temp_path = f"generated_assets/{unique_id}_{file.filename}"
     
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    enhanced_prompt = (
+        f"Professional commercial photography of {prompt}, "
+        "centered product shot, "
+        "hyper-realistic 8k resolution, "
+        "shot on Hasselblad X2D 100C, "  
+        "50mm prime lens, f/2.8, "      
+        "intricate texture details, "  
+        "global illumination, "          
+        "hard shadows, "                 
+        "no floating objects, "
+        "award-winning advertising masterpiece"
+    )
     brand_guidelines = {
         "tesco": "clean white and blue theme, supermarket lighting",
         "cadbury": "rich purple #261251 background accents, warm golden lighting",
