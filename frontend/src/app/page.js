@@ -5,7 +5,7 @@ import { Upload, Wand2, CheckCircle, Loader2, Image as ImageIcon, Download, Shar
 
 
 export default function Home() {
-  const API_BASE = "https://tesco-creative-synthesizer-rey5.onrender.com";
+  const API_BASE = "https://shivang2608-tesco-backend.hf.space";
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [prompt, setPrompt] = useState("");

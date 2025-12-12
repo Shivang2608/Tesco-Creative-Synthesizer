@@ -58,7 +58,7 @@ async def analyze_image(file: UploadFile = File(...)):
         with Image.open(temp_filename) as img:
             
             # 2. CALL GEMINI VISION MODEL
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             
             prompt = (
                 "Look at this product image. Identify what category it belongs to (e.g., beauty, food, fashion, tech). "

@@ -15,7 +15,7 @@ class CreativeCatalyst:
         self.stability_key = os.getenv("STABILITY_KEY")
         if not self.stability_key:
              print("⚠️ WARNING: STABILITY_KEY not found in .env file.") 
-        self.rembg_session = new_session("u2netp")
+        self.rembg_session = new_session("u2net")
 
         
     def remove_background(self, input_image_path):
