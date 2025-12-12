@@ -1,7 +1,7 @@
 import io
 import os
 import requests
-from rembg import remove
+from rembg import remove, new_session
 from PIL import Image, ImageOps, ImageFilter, ImageDraw, ImageFont
 from dotenv import load_dotenv
 
@@ -15,12 +15,14 @@ class CreativeCatalyst:
         self.stability_key = os.getenv("STABILITY_KEY")
         if not self.stability_key:
              print("⚠️ WARNING: STABILITY_KEY not found in .env file.") 
+        self.rembg_session = new_session("u2netp")
 
+        
     def remove_background(self, input_image_path):
         print(f"✂️ Removing background from: {input_image_path}...")
         with open(input_image_path, 'rb') as i:
             input_data = i.read()
-        subject_only = remove(input_data)
+        subject_only = remove(input_data, session=self.rembg_session)
         img = Image.open(io.BytesIO(subject_only)).convert("RGBA")
         print("✅ Background removed.")
         return img
