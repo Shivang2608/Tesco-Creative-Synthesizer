@@ -2,7 +2,10 @@
 import { useState, useEffect } from "react";
 import { Upload, Wand2, CheckCircle, Loader2, Image as ImageIcon, Download, Share2, ChevronLeft, ChevronRight, Layout, Plus, Sparkles, Lock, AlertTriangle, Layers, CreditCard, Tag, Users, Database, ChevronDown, Grid, List, ShieldCheck, FileText, Crop, X, Save, Eye, Smartphone, RefreshCw, Monitor, Wrench, FileBadge, ScanLine, RotateCcw } from "lucide-react";
 
+
+
 export default function Home() {
+  const API_BASE = "https://tesco-creative-synthesizer-rey5.onrender.com";
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [prompt, setPrompt] = useState("");
@@ -104,7 +107,7 @@ export default function Home() {
     const formData = new FormData();
     formData.append("file", selectedFile);
     try {
-      const response = await fetch("http://127.0.0.1:8000/analyze-image", { method: "POST", body: formData });
+      const response = await fetch(`${API_BASE}/analyze-image`, { method: "POST", body: formData });
       const data = await response.json();
       setPrompt(data.suggested_prompt);
     } catch (error) {
@@ -135,7 +138,7 @@ export default function Home() {
     formData.append("audience", audience);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/generate-campaign", { method: "POST", body: formData });
+      const response = await fetch(`${API_BASE}/generate-campaign`, { method: "POST", body: formData });
       
       if (!response.ok) throw new Error("Backend Error");
       
@@ -414,7 +417,7 @@ export default function Home() {
             
             <div className="relative border border-blue-500/20 rounded-2xl overflow-hidden bg-slate-900/30 flex items-center justify-center h-[500px] shadow-[0_0_100px_rgba(59,130,246,0.1)] group">
               {result?.assets?.square?.url && (
-                  <img src={result.assets.square.url} className="h-full object-contain opacity-90 transition-all duration-500" style={{ filter: auditState === "fixing" ? "blur(4px)" : "none" }} />
+                  <img src={`${API_BASE}${result.assets.square.url}`} className="h-full object-contain opacity-90 transition-all duration-500" style={{ filter: auditState === "fixing" ? "blur(4px)" : "none" }} />
               )}
               
               {showDebugOverlay && auditState !== "fixing" && (
@@ -542,10 +545,11 @@ export default function Home() {
                             <div className={`aspect-[4/5] bg-black/40 flex items-center justify-center overflow-hidden relative p-4 transition-all duration-500 ${isLoading ? 'blur-sm' : ''}`}>
                                {showHeatmap && (<div className="absolute inset-0 z-10 bg-gradient-radial from-red-500/60 via-yellow-500/30 to-blue-900/40 mix-blend-overlay opacity-80 pointer-events-none"></div>)}
                                {contextMode ? (
-                                   <div className={`relative overflow-hidden shadow-2xl ${key === 'story' || key === 'portrait' ? 'rounded-[2rem] border-4 border-black bg-black' : key === 'landscape' ? 'border-8 border-gray-400 bg-gray-800 rounded-lg shadow-[0_10px_20px_rgba(0,0,0,0.5)]' : 'bg-white p-2 rounded shadow-lg'}`}>{(key === 'story' || key === 'portrait') && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-4 bg-black rounded-b-xl z-20"></div>}<img src={asset.url} className={`w-full h-full object-cover ${key === 'story' || key === 'portrait' ? 'rounded-[1.8rem]' : ''}`} /></div>
+                                   <div className={`relative overflow-hidden shadow-2xl ${key === 'story' || key === 'portrait' ? 'rounded-[2rem] border-4 border-black bg-black' : key === 'landscape' ? 'border-8 border-gray-400 bg-gray-800 rounded-lg shadow-[0_10px_20px_rgba(0,0,0,0.5)]' : 'bg-white p-2 rounded shadow-lg'}`}>{(key === 'story' || key === 'portrait') && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-4 bg-black rounded-b-xl z-20"></div>}
+                                   <img src={`${API_BASE}${asset.url}`} className={`w-full h-full object-cover ${key === 'story' || key === 'portrait' ? 'rounded-[1.8rem]' : ''}`} /></div>
                                ) : (
                                    <div className="relative w-full h-full flex items-center justify-center">
-                                       <img src={asset.url} className="w-full h-full object-cover rounded-lg shadow-lg" />
+                                       <img src={`${API_BASE}${asset.url}`} className="w-full h-full object-cover rounded-lg shadow-lg" />
                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center"><button onClick={() => setEditingAsset(asset)} className="bg-white text-black px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 hover:scale-105 transition"><Crop size={14}/> Adjust Crop</button></div>
                                    </div>
                                )}
@@ -553,7 +557,7 @@ export default function Home() {
                             <div className="p-4 bg-[#0F172A] relative z-20">
                                <div className="text-white font-bold text-sm mb-1">{spec.label}</div>
                                <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono"><FileText size={10}/> JPG <span className="w-1 h-1 bg-slate-600 rounded-full"></span> {spec.size} <span className="w-1 h-1 bg-slate-600 rounded-full"></span> {spec.dim}</div>
-                               <a href={asset.url} download className="mt-3 w-full block text-center bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 py-2 rounded-lg text-xs font-bold transition">Download</a>
+                               <a href={`${API_BASE}${asset.url}`} download className="mt-3 w-full block text-center bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 py-2 rounded-lg text-xs font-bold transition">Download</a>
                             </div>
                          </div>
                       );
@@ -577,7 +581,7 @@ export default function Home() {
                           <div key={formatKey} className={`absolute transition-all duration-500 ${transform}`}>
                              <div className="relative">
                                 {showHeatmap && <div className="absolute inset-0 z-10 bg-gradient-radial from-red-500/60 via-yellow-500/30 to-blue-900/40 mix-blend-overlay opacity-80 pointer-events-none rounded-xl"></div>}
-                                <img src={asset.url} className="rounded-xl shadow-2xl border border-white/10" style={{maxHeight: '500px'}} />
+                                <img src={`${API_BASE}${asset.url}`} className="rounded-xl shadow-2xl border border-white/10" style={{maxHeight: '500px'}} />
                              </div>
                           </div>
                        )
@@ -590,7 +594,7 @@ export default function Home() {
              <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8">
                 <div className="bg-[#0F172A] border border-white/10 rounded-2xl w-full max-w-4xl h-[80vh] flex flex-col">
                    <div className="p-4 border-b border-white/10 flex justify-between items-center"><h3 className="text-white font-bold flex items-center gap-2"><Crop size={16}/> Smart Crop Editor</h3><button onClick={() => setEditingAsset(null)} className="text-slate-400 hover:text-white"><X size={20}/></button></div>
-                   <div className="flex-1 relative bg-black/50 overflow-hidden flex items-center justify-center p-8"><div className="relative border-2 border-white/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.7)] cursor-move"><img src={editingAsset.url} className="max-h-[60vh]" /><div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none"><div className="border-r border-b border-white/30"></div><div className="border-r border-b border-white/30"></div><div className="border-b border-white/30"></div><div className="border-r border-b border-white/30"></div><div className="border-r border-b border-white/30"></div><div className="border-b border-white/30"></div><div className="border-r border-white/30"></div><div className="border-r border-white/30"></div><div></div></div></div></div>
+                   <div className="flex-1 relative bg-black/50 overflow-hidden flex items-center justify-center p-8"><div className="relative border-2 border-white/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.7)] cursor-move"><img src={`${API_BASE}${editingAsset.url}`} className="max-h-[60vh]" /><div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none"><div className="border-r border-b border-white/30"></div><div className="border-r border-b border-white/30"></div><div className="border-b border-white/30"></div><div className="border-r border-b border-white/30"></div><div className="border-r border-b border-white/30"></div><div className="border-b border-white/30"></div><div className="border-r border-white/30"></div><div className="border-r border-white/30"></div><div></div></div></div></div>
                    <div className="p-4 border-t border-white/10 flex justify-end gap-3"><button onClick={() => setEditingAsset(null)} className="px-4 py-2 text-slate-300 hover:text-white text-xs font-bold">Cancel</button><button onClick={() => {alert("Crop Saved!"); setEditingAsset(null);}} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg text-xs font-bold flex items-center gap-2"><Save size={14}/> Save Changes</button></div>
                 </div>
              </div>

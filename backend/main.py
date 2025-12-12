@@ -200,7 +200,7 @@ async def generate_campaign(
     for key, dims in formats.items():
         if key == "square":
             generated_assets[key] = {
-                "url": f"http://127.0.0.1:8000/static/{master_filename}",
+                "url": f"/static/{master_filename}",
                 "label": dims["label"]
             }
         else:
@@ -210,7 +210,7 @@ async def generate_campaign(
             resized_img.save(path)
             
             generated_assets[key] = {
-                "url": f"http://127.0.0.1:8000/static/{filename}",
+                "url": f"/static/{filename}",
                 "label": dims["label"]
             }
     
